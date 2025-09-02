@@ -1,0 +1,185 @@
+{
+  "createdAt": "2025-09-01T15:07:24.731Z",
+  "updatedAt": "2025-09-02T08:12:24.000Z",
+  "id": "ptLu1gp8Avwfj3JA",
+  "name": "backup workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3c1e977f-e30d-4799-9e02-517f8edd4831",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5678/api/v1/workflows?limit=250",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "n8nApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "2fa6369c-6271-4a7e-8f19-6f92c8e99aa7",
+      "name": "HTTP Request",
+      "credentials": {
+        "n8nApi": {
+          "id": "iiamUJL6UgUgfHZw",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "269f074b-1e2a-4a0d-bce9-8a5ba7b59949",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "const cutoff = new Date(\"2025-09-01T00:00:00Z\");\n\nreturn items\n  .filter(item => new Date(item.json.updatedAt) > cutoff)\n  .map(item => {\n    // Hele workflow-data som JSON\n    const jsonStr = JSON.stringify(item.json, null, 2);\n\n    return {\n      json: {\n        fileName: `workflow_${item.json.id}.json`\n      },\n      binary: {\n        data: {\n          data: Buffer.from(jsonStr).toString('base64'),\n          mimeType: 'application/json',\n          fileName: `workflow_${item.json.id}.json`\n        }\n      }\n    };\n  });\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "e2087558-c2b2-4c3a-af20-732506b8dbe7",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "amaliecjensen",
+          "mode": "list",
+          "cachedResultName": "amaliecjensen",
+          "cachedResultUrl": "https://github.com/amaliecjensen"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-backups",
+          "mode": "list",
+          "cachedResultName": "n8n-backups",
+          "cachedResultUrl": "https://github.com/amaliejcensen/n8n-backups"
+        },
+        "filePath": "=backups/workflow_{{ $json.id }}.json",
+        "fileContent": "={{ JSON.stringify($json) }}{{ JSON.stringify($json, null, 2) }}",
+        "commitMessage": "=Backup of workflow {{$json[\"id\"]}}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1088,
+        0
+      ],
+      "id": "8115cf83-0932-4a04-9146-18b96ef150d0",
+      "name": "Edit a file",
+      "webhookId": "0d43aa89-858b-4c34-947e-31dea457c812",
+      "credentials": {
+        "githubApi": {
+          "id": "wq0VP6uoir2BNf5i",
+          "name": "GitHub account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Edit a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit a file": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "9fa2ebf9-94a3-40a4-9a28-833afbc89bb9",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-09-01T15:07:24.750Z",
+      "updatedAt": "2025-09-01T15:07:24.750Z",
+      "role": "workflow:owner",
+      "workflowId": "ptLu1gp8Avwfj3JA",
+      "projectId": "UdACivrq7f5sBtX5"
+    }
+  ],
+  "tags": []
+}
