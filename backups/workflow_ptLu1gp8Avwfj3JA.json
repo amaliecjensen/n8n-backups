@@ -1,6 +1,6 @@
 {
   "createdAt": "2025-09-01T15:07:24.731Z",
-  "updatedAt": "2025-09-02T08:12:24.000Z",
+  "updatedAt": "2025-09-02T08:27:45.000Z",
   "id": "ptLu1gp8Avwfj3JA",
   "name": "backup workflow",
   "active": false,
@@ -61,7 +61,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const cutoff = new Date(\"2025-09-01T00:00:00Z\");\n\nreturn items\n  .filter(item => new Date(item.json.updatedAt) > cutoff)\n  .map(item => {\n    // Hele workflow-data som JSON\n    const jsonStr = JSON.stringify(item.json, null, 2);\n\n    return {\n      json: {\n        fileName: `workflow_${item.json.id}.json`\n      },\n      binary: {\n        data: {\n          data: Buffer.from(jsonStr).toString('base64'),\n          mimeType: 'application/json',\n          fileName: `workflow_${item.json.id}.json`\n        }\n      }\n    };\n  });\n"
+        "jsCode": "return items.map(item => {\n  const workflowData = item.json; // Hele workflowet\n  const content = JSON.stringify(workflowData, null, 2); // pretty-print JSON\n\n  return {\n    json: {\n      fileName: `workflow_${workflowData.id}.json`\n    },\n    binary: {\n      data: {\n        data: Buffer.from(content).toString('base64'),\n        mimeType: 'application/json',\n        fileName: `workflow_${workflowData.id}.json`\n      }\n    }\n  };\n});\n"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -90,8 +90,8 @@
           "cachedResultName": "n8n-backups",
           "cachedResultUrl": "https://github.com/amaliejcensen/n8n-backups"
         },
-        "filePath": "=backups/workflow_{{ $json.id }}.json",
-        "fileContent": "={{ JSON.stringify($json) }}{{ JSON.stringify($json, null, 2) }}",
+        "filePath": "=backups/{{ $json.fileName }}",
+        "binaryData": true,
         "commitMessage": "=Backup of workflow {{$json[\"id\"]}}"
       },
       "type": "n8n-nodes-base.github",
@@ -102,6 +102,44 @@
       ],
       "id": "8115cf83-0932-4a04-9146-18b96ef150d0",
       "name": "Edit a file",
+      "webhookId": "0d43aa89-858b-4c34-947e-31dea457c812",
+      "credentials": {
+        "githubApi": {
+          "id": "wq0VP6uoir2BNf5i",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "amaliecjensen",
+          "mode": "list",
+          "cachedResultName": "amaliecjensen",
+          "cachedResultUrl": "https://github.com/amaliecjensen"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-backups",
+          "mode": "list",
+          "cachedResultName": "n8n-backups",
+          "cachedResultUrl": "https://github.com/amaliejcensen/n8n-backups"
+        },
+        "filePath": "=backups/{{ $json.fileName }}",
+        "binaryData": true,
+        "commitMessage": "=Backup of workflow {{$json[\"id\"]}}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1056,
+        160
+      ],
+      "id": "0386e6f6-079f-469c-95f5-f65df94d7f2b",
+      "name": "Edit a file1",
       "webhookId": "0d43aa89-858b-4c34-947e-31dea457c812",
       "credentials": {
         "githubApi": {
@@ -170,7 +208,7 @@
     "templateCredsSetupCompleted": true
   },
   "pinData": {},
-  "versionId": "9fa2ebf9-94a3-40a4-9a28-833afbc89bb9",
+  "versionId": "8226dccc-2358-4e15-84d3-2af2534c938e",
   "triggerCount": 0,
   "shared": [
     {
