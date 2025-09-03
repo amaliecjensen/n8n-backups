@@ -1,0 +1,326 @@
+{
+  "createdAt": "2025-09-01T15:07:24.731Z",
+  "updatedAt": "2025-09-02T10:30:39.000Z",
+  "id": "ptLu1gp8Avwfj3JA",
+  "name": "backup workflow",
+  "active": false,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        208,
+        0
+      ],
+      "id": "3c1e977f-e30d-4799-9e02-517f8edd4831",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "url": "http://localhost:5678/api/v1/workflows?limit=250",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "n8nApi",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        432,
+        0
+      ],
+      "id": "2fa6369c-6271-4a7e-8f19-6f92c8e99aa7",
+      "name": "HTTP Request",
+      "credentials": {
+        "n8nApi": {
+          "id": "iiamUJL6UgUgfHZw",
+          "name": "n8n account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "data",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitOut",
+      "typeVersion": 1,
+      "position": [
+        656,
+        0
+      ],
+      "id": "269f074b-1e2a-4a0d-bce9-8a5ba7b59949",
+      "name": "Split Out"
+    },
+    {
+      "parameters": {
+        "jsCode": "return items.map(item => {\n  const workflowData = item.json;\n  const safeName = workflowData.name.replace(/\\s+/g, \"_\");\n\n  return {\n    json: {\n      fileName: `workflow_${safeName}_${workflowData.id}.json`,\n      fileContent: JSON.stringify(workflowData, null, 2) // ren tekst\n    }\n  };\n});\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "e2087558-c2b2-4c3a-af20-732506b8dbe7",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "get",
+        "owner": {
+          "__rl": true,
+          "value": "amaliecjensen",
+          "mode": "list",
+          "cachedResultName": "amaliecjensen",
+          "cachedResultUrl": "https://github.com/amaliecjensen"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-backups",
+          "mode": "list",
+          "cachedResultName": "n8n-backups",
+          "cachedResultUrl": "https://github.com/amaliecjensen/n8n-backups"
+        },
+        "filePath": "=backups/{{ $json.fileName }}\n",
+        "asBinaryProperty": false,
+        "additionalParameters": {
+          "reference": ""
+        }
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1104,
+        0
+      ],
+      "id": "8e86bb2c-ba94-4958-9d86-b976b91b6a16",
+      "name": "Get a file",
+      "webhookId": "65243e56-1523-469a-a090-75eb1a03fff0",
+      "credentials": {
+        "githubApi": {
+          "id": "wq0VP6uoir2BNf5i",
+          "name": "GitHub account"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6fcc954e-dcb8-4cab-9436-91f7b24c2419",
+              "leftValue": "={{ $json.sha }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        0
+      ],
+      "id": "bd273e02-8479-4faf-91d2-ab1016bae878",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "owner": {
+          "__rl": true,
+          "value": "amaliecjensen",
+          "mode": "list",
+          "cachedResultName": "amaliecjensen",
+          "cachedResultUrl": "https://github.com/amaliecjensen"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-backups",
+          "mode": "list",
+          "cachedResultName": "n8n-backups",
+          "cachedResultUrl": "https://github.com/amaliejcensen/n8n-backups"
+        },
+        "filePath": "=backups/{{ $json.fileName }}",
+        "fileContent": "={{ $json.fileContent }}",
+        "commitMessage": "=Backup of workflow {{$json[\"id\"]}}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1552,
+        112
+      ],
+      "id": "2329862d-aec2-4f26-b0dd-491de5cfd285",
+      "name": "Create a file1",
+      "webhookId": "0d43aa89-858b-4c34-947e-31dea457c812",
+      "credentials": {
+        "githubApi": {
+          "id": "wq0VP6uoir2BNf5i",
+          "name": "GitHub account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "operation": "edit",
+        "owner": {
+          "__rl": true,
+          "value": "amaliecjensen",
+          "mode": "list",
+          "cachedResultName": "amaliecjensen",
+          "cachedResultUrl": "https://github.com/amaliecjensen"
+        },
+        "repository": {
+          "__rl": true,
+          "value": "n8n-backups",
+          "mode": "list",
+          "cachedResultName": "n8n-backups",
+          "cachedResultUrl": "https://github.com/amaliejcensen/n8n-backups"
+        },
+        "filePath": "=backups/{{ $json.fileName }}\n",
+        "fileContent": "={{ $json.fileContent }}\n",
+        "commitMessage": "=Backup of workflow {{$json[\"id\"]}}"
+      },
+      "type": "n8n-nodes-base.github",
+      "typeVersion": 1.1,
+      "position": [
+        1536,
+        -64
+      ],
+      "id": "8115cf83-0932-4a04-9146-18b96ef150d0",
+      "name": "Edit a file",
+      "webhookId": "0d43aa89-858b-4c34-947e-31dea457c812",
+      "credentials": {
+        "githubApi": {
+          "id": "wq0VP6uoir2BNf5i",
+          "name": "GitHub account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Split Out",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Out": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "Get a file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a file": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit a file",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Create a file1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit a file": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "bf3a19d6-5097-4101-8077-473a944504ba",
+  "triggerCount": 0,
+  "shared": [
+    {
+      "createdAt": "2025-09-01T15:07:24.750Z",
+      "updatedAt": "2025-09-01T15:07:24.750Z",
+      "role": "workflow:owner",
+      "workflowId": "ptLu1gp8Avwfj3JA",
+      "projectId": "UdACivrq7f5sBtX5"
+    }
+  ],
+  "tags": []
+}
